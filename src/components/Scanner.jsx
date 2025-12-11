@@ -11,7 +11,6 @@ const Scanner = ({ onClose, onScan }) => {
   const [loading, setLoading] = useState(true);
   const [scanError, setScanError] = useState('');
 
-  // Inject jsQR library dynamically since we are in a single-file env
   useEffect(() => {
     let isMounted = true;
     const script = document.createElement('script');
@@ -79,7 +78,7 @@ const Scanner = ({ onClose, onScan }) => {
       streamRef.current = null;
     }
     
-    // Also clean up video source
+    // Clean up video source
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
@@ -146,7 +145,7 @@ const Scanner = ({ onClose, onScan }) => {
 
         <div className="p-4 bg-slate-50 text-center text-sm text-slate-500">
             Point camera at a product QR code. <br/>
-            <span className="text-xs text-slate-400">(Try pointing at a QR code containing "TEST_CHAIN_001")</span>
+            <span className="text-xs text-slate-400">(Try pointing at a QR code containing TEST_CHAIN_001)</span>
         </div>
       </div>
     </div>

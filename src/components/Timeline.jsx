@@ -14,13 +14,13 @@ import {
 const IconMapper = ({ type, className }) => {
   switch (type) {
     case "dollar":
-      return <CheckCircle className={className} />; // Closest to 'sold'
+      return <CheckCircle className={className} />;
     case "truck":
       return <Truck className={className} />;
     case "funnel":
-      return <Wine className={className} />; // Represents bottling
+      return <Wine className={className} />;
     case "droplet":
-      return <Factory className={className} />; // Production
+      return <Factory className={className} />;
     case "leaf":
       return <Sprout className={className} />;
     default:

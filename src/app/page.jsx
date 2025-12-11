@@ -67,7 +67,6 @@ export default function App() {
     const file = e.target.files[0];
     if (!file) return;
 
-    // Reset error
     setError('');
     
     const reader = new FileReader();
