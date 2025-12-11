@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Search, AlertCircle, Scan, Loader2 } from "lucide-react";
+import { Search, AlertCircle, Scan, Loader2, Upload } from "lucide-react";
 
 import Scanner from "../components/Scanner";
 import Timeline from "../components/Timeline";
@@ -31,8 +31,17 @@ export default function App() {
   const [error, setError] = useState('');
   const [isScanning, setIsScanning] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => { performSearch('SUNSCREEN-ROH-20251007-4E3'); }, []);
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js";
+    script.async = true;
+    document.body.appendChild(script);
+    return () => { if (document.body.contains(script)) document.body.removeChild(script); };
+  }, []);
 
   const performSearch = async (id) => {
       setIsLoading(true);
@@ -53,6 +62,42 @@ export default function App() {
 
   const handleSearch = (e) => { e.preventDefault(); performSearch(searchTerm); };
   const handleScanSuccess = (scannedText) => { setIsScanning(false); performSearch(scannedText); };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Reset error
+    setError('');
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        if (window.jsQR) {
+          const code = window.jsQR(imageData.data, imageData.width, imageData.height);
+          if (code) {
+            performSearch(code.data);
+          } else {
+            setError("Could not detect a QR code in the uploaded image.");
+          }
+        } else {
+            setError("Scanner library is still loading. Please try again in a moment.");
+        }
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+    // Reset input so same file can be selected again
+    e.target.value = '';
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans p-6 md:p-12">
@@ -76,7 +121,34 @@ export default function App() {
                 className="w-full outline-none text-slate-700 placeholder-slate-300 uppercase font-mono tracking-wider"
                 placeholder="ENTER PRODUCT ID..." disabled={isLoading}
               />
-              <button type="button" onClick={() => setIsScanning(true)} className="ml-2 p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-full transition-all" title="Scan QR Code" disabled={isLoading}>
+              {/* Hidden File Input */}
+              <input 
+                type="file" 
+                ref={fileInputRef}
+                className="hidden" 
+                accept="image/*"
+                onChange={handleFileUpload}
+              />
+
+              {/* Upload Button */}
+              <button 
+                type="button" 
+                onClick={() => fileInputRef.current.click()} 
+                className="ml-2 p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-full transition-all" 
+                title="Upload QR Image" 
+                disabled={isLoading}
+              >
+                <Upload className="w-5 h-5" />
+              </button>
+
+              {/* Camera Button */}
+              <button 
+                type="button" 
+                onClick={() => setIsScanning(true)} 
+                className="ml-1 p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-full transition-all" 
+                title="Scan QR Code" 
+                disabled={isLoading}
+              >
                 <Scan className="w-5 h-5" />
               </button>
             </div>
